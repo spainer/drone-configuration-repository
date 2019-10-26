@@ -1,0 +1,21 @@
+{
+  "name": "drone-configuration-repository",
+  "version": "1.0.0",
+  "description": "Drone configuration plugin for storing configurations in an extra repository",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spainer/drone-configuration-repository.git"
+  },
+  "keywords": [
+    "drone"
+  ],
+  "author": "Sven Painer <sven@painer.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/spainer/drone-configuration-repository/issues"
+  },
+  "homepage": "https://github.com/spainer/drone-configuration-repository#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
