@@ -4,7 +4,7 @@ This is a configuration plugin for [Drone](https://drone.io/). This plugin makes
 
 ## Installation
 
-The configuration plugin is available at [Docker Hub](https://cloud.docker.com/repository/docker/svenpainer/drone-configuration-repository). Therefore, the easiest thing is to use a docker-compose file like the following:
+The configuration plugin is available at [Docker Hub](https://hub.docker.com/r/svenpainer/drone-configuration-repository). Therefore, the easiest thing is to use a docker-compose file like the following:
 
 ```yml
 version: '3.7'
