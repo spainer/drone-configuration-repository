@@ -2,6 +2,7 @@
 
 const child_process = require('child_process')
 const fs = require('fs')
+const crypto = require('crypto')
 
 const express = require('express')
 
@@ -9,6 +10,8 @@ const express = require('express')
 const REPOSITORY_URL = process.env.DRONE_YAML_REPOSITORY_URL
 const PORT = process.env.DRONE_SERVER_PORT || 3000
 const DATA_FOLDER = process.env.DRONE_DATA_FOLDER || 'data'
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET
+const WEBHOOK_SIGNATURE_HEADER = process.env.WEBHOOK_SIGNATURE_HEADER || 'X-Gitea-Signature'
 
 // check that repository URL is set
 if (!REPOSITORY_URL) {
@@ -21,7 +24,44 @@ var index
 
 // create express app and add JSON parser for body to get data from Drone
 const app = express()
-app.use(express.json())
+var rawBodySaver = function (req, res, buf, encoding) {
+    if (buf && buf.length) {
+      req.rawBody = buf.toString(encoding || 'utf8')
+    }
+}
+app.use(express.json({verify: rawBodySaver}))
+
+if (!WEBHOOK_SECRET) {
+    console.warn('webhook secret not given. webhook /update endpoint disabled.')
+} else {
+    // Pull latest data from repository and update cached index
+    app.post('/update', async (req, res) => {
+        console.log(`triggering update for configuration repository`)
+
+        // Verify webhook signature
+        const signature_header = req.get(WEBHOOK_SIGNATURE_HEADER)
+        const signature_calculated = crypto.createHmac('sha256', WEBHOOK_SECRET)
+            .update(req.rawBody)
+            .digest('hex')
+
+        const signature_calculated_buf = Buffer.from(signature_calculated, "utf8")
+        const signature_header_buf = Buffer.from(signature_header, "utf8")
+        if (signature_calculated_buf.length !== signature_header_buf.length
+        || !crypto.timingSafeEqual(signature_calculated_buf, signature_header_buf)) {
+            console.error('Invalid webhook signature.')
+            res.status(403).json({'status': 'error', 'msg': 'invalid webhook signature'})
+            return
+        }
+
+        try {
+            await fetchData()
+            index = await readIndex()
+            res.json({'status': 'ok'})
+        } catch (error) {
+            res.json({'status': 'error', 'msg': error})
+        }
+    })
+}
 
 // Drone will send requests as POST to the root
 app.post('/', (req, res) => {

@@ -40,6 +40,8 @@ When Drone asks for a repository that is not defined in `index.json`, it will fa
 
 As the plugin clones or updates the repository at startup, you have to restart the service when you make any changes to the repository.
 
+Optionally, you can setup a webhook for the repository pointing to `http://drone_yaml_repository:3000/update` to trigger a refresh whenever the pipeline configuration repository changes. Make sure to set the `WEBHOOK_SECRET` environment variable accordingly.
+
 ## Configuration
 
 The following environment variables can be set to alter the behaviour of the plugin:
@@ -49,3 +51,5 @@ Environment Variable | Default Value | Description
 DRONE_YAML_REPOSITORY | | The clone URL of the repository containing the configurations. **This variable is required.**
 DRONE_SERVER_PORT | 3000 | The plugin will listen on this port for requests from Drone. Be sure to also alter the Drone configuration when changing the port setting here.
 DRONE_DATA_FOLDER | data | The folder to store the cloned repository. Can be changed to store the data persistent in a volume or bind mount.
+WEBHOOK_SECRET | | The webhook secret for the `/update` POST endpoint.
+WEBHOOK_SIGNATURE_HEADER | X-Gitea-Signature | The header name which contains the hmac-sha256 signature of the webhook request body.
